@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head><title>Registro - CasinoGG</title></head>
+<body>
+    <h1>Registro en CasinoGG</h1>
+    <p>Al registrarte recibirás <strong>1000€ virtuales</strong> de bienvenida. ¡Suscríbete a la newsletter y consigue <strong>500€ extra</strong>!</p>
+
+    {% for message in app.flashes('error') %}
+        <p>{{ message }}</p>
+    {% endfor %}
+
+    {{ form_start(form) }}
+        {{ form_row(form.email) }}
+        {{ form_row(form.plainPassword) }}
+        {{ form_row(form.newsletter) }}
+        {{ form_row(form.agreeTerms) }}
+        <button type="submit">Registrarse</button>
+    {{ form_end(form) }}
+
+    <a href="{{ path('app_login') }}">¿Ya tienes cuenta? Inicia sesión</a>
+</body>
+</html>
