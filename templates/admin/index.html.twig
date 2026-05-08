@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Admin - CasinoGG</title>
+</head>
+<body class="bg-dark text-white">
+<nav class="navbar navbar-dark bg-black px-4">
+    <a href="{{ path('app_home') }}" class="navbar-brand">CasinoGG</a>
+    <span class="text-warning">Panel Admin</span>
+</nav>
+<div class="container py-4">
+    {% for msg in app.flashes('success') %}
+        <div class="alert alert-success">{{ msg }}</div>
+    {% endfor %}
+
+    <h3 class="text-warning mb-4">Usuarios</h3>
+    <div class="table-responsive">
+        <table class="table table-dark table-bordered">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Rol</th>
+                    <th>Estado</th>
+                    <th>Saldo</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usuario in usuarios %}
+                <tr>
+                    <td>{{ usuario.id }}</td>
+                    <td>{{ usuario.email }}</td>
+                    <td>{{ usuario.roles|join(', ') }}</td>
+                    <td>{{ usuario.estadoVerificacion }}</td>
+                    <td>{{ usuario.saldo }}€</td>
+                    <td>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <form method="post" action="{{ path('app_admin_saldo', {id: usuario.id}) }}" class="d-flex gap-2">
+                                <input type="number" name="saldo" step="0.01" value="{{ usuario.saldo }}" class="form-control form-control-sm" style="width:120px">
+                                <button class="btn btn-warning btn-sm">Guardar</button>
+                            </form>
+                            <form method="post" action="{{ path('app_admin_eliminar', {id: usuario.id}) }}" onsubmit="return confirm('¿Seguro que quieres eliminar a {{ usuario.email }}? Esta acción no se puede deshacer.')">
+                                <button class="btn btn-danger btn-sm">Eliminar</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
