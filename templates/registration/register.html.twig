@@ -35,7 +35,7 @@
         </div>
         <div class="mb-3 form-check">
             {{ form_widget(form.agreeTerms, {'attr': {'class': 'form-check-input'}}) }}
-            <label class="form-check-label">Acepto los términos y condiciones</label>
+            <label class="form-check-label">Acepto los <a href="{{ path('app_terminos') }}" target="_blank" class="text-warning">términos y condiciones</a></label>
             {{ form_errors(form.agreeTerms) }}
         </div>
         <button class="btn btn-warning w-100">Registrarse</button>

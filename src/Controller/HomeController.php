@@ -40,48 +40,52 @@ class HomeController extends AbstractController
         return $this->render('home/ruleta_europea.html.twig');
     }
 
-    #[Route('/ruleta/europea/girar', name: 'app_ruleta_europea_girar', methods: ['POST'])]
-    public function girarRuleta(Request $request, EntityManagerInterface $em): Response
-    {
-        $user = $this->getUser();
-        $apuesta = (float) $request->request->get('apuesta');
-        $tipo = $request->request->get('tipo');
+   #[Route('/ruleta/europea/girar', name: 'app_ruleta_europea_girar', methods: ['POST'])]
+public function girarRuleta(Request $request, EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    $apuestaPorCasilla = (float) $request->request->get('apuesta');
+    $selecciones = explode(',', $request->request->get('selecciones'));
+    $totalApuesta = $apuestaPorCasilla * count($selecciones);
 
-        if ($apuesta <= 0 || $apuesta > (float) $user->getSaldo()) {
-            return $this->json(['error' => 'Apuesta inválida'], 400);
-        }
-
-        $numero = random_int(0, 36);
-        $rojos = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-        $color = $numero === 0 ? 'verde' : (in_array($numero, $rojos) ? 'rojo' : 'negro');
-
-        $ganancia = 0;
-        if ((string)$numero === $tipo) {
-            $ganancia = $apuesta * 36;
-        } elseif ($tipo === $color) {
-            $ganancia = $apuesta * 2;
-        }
-
-        $nuevoSaldo = (float) $user->getSaldo() - $apuesta + $ganancia;
-        $user->setSaldo((string) $nuevoSaldo);
-
-        $partida = new \App\Entity\Partida();
-        $partida->setUser($user);
-        $partida->setJuego($em->getRepository(\App\Entity\Juego::class)->findOneBy(['nombre' => 'Ruleta Europea']));
-        $partida->setCantidadApostada((string)$apuesta);
-        $partida->setResultadoObtenido((string)$ganancia);
-        $partida->setFecha(new \DateTime());
-        $em->persist($partida);
-        $em->flush();
-
-        return $this->json([
-            'numero' => $numero,
-            'color' => $color,
-            'ganancia' => $ganancia,
-            'saldo' => $nuevoSaldo,
-            'gano' => $ganancia > 0
-        ]);
+    if ($apuestaPorCasilla <= 0 || $totalApuesta > (float) $user->getSaldo()) {
+        return $this->json(['error' => 'Apuesta inválida'], 400);
     }
+
+    $numero = random_int(0, 36);
+    $rojos = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
+    $color = $numero === 0 ? 'verde' : (in_array($numero, $rojos) ? 'rojo' : 'negro');
+
+    $ganancia = 0;
+    foreach ($selecciones as $tipo) {
+        $tipo = trim($tipo);
+        if ((string)$numero === $tipo) {
+            $ganancia += $apuestaPorCasilla * 36;
+        } elseif ($tipo === $color) {
+            $ganancia += $apuestaPorCasilla * 2;
+        }
+    }
+
+    $nuevoSaldo = (float) $user->getSaldo() - $totalApuesta + $ganancia;
+    $user->setSaldo((string) $nuevoSaldo);
+
+    $partida = new \App\Entity\Partida();
+    $partida->setUser($user);
+    $partida->setJuego($em->getRepository(\App\Entity\Juego::class)->findOneBy(['nombre' => 'Ruleta Europea']));
+    $partida->setCantidadApostada((string) $totalApuesta);
+    $partida->setResultadoObtenido((string) $ganancia);
+    $partida->setFecha(new \DateTime());
+    $em->persist($partida);
+    $em->flush();
+
+    return $this->json([
+        'numero' => $numero,
+        'color' => $color,
+        'ganancia' => $ganancia,
+        'saldo' => $nuevoSaldo,
+        'gano' => $ganancia > 0
+    ]);
+}
 
     #[Route('/slots/jugar', name: 'app_slots_jugar', methods: ['POST'])]
 public function slotsJugar(Request $request, EntityManagerInterface $em): Response
@@ -209,5 +213,57 @@ public function dadosJugar(Request $request, EntityManagerInterface $em): Respon
         'saldo' => $nuevoSaldo,
         'gano' => $ganancia > 0
     ]);
+}
+
+#[Route('/recompensa', name: 'app_recompensa', methods: ['POST'])]
+public function recompensa(EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    $ahora = new \DateTime();
+
+    if ($user->getUltimaRecompensa() !== null) {
+        $diff = $ahora->diff($user->getUltimaRecompensa());
+        $horas = ($diff->days * 24) + $diff->h;
+        if ($horas < 24) {
+            return $this->json(['error' => 'Ya reclamaste tu recompensa hoy. Vuelve en ' . (24 - $horas) . ' horas.']);
+        }
+    }
+
+    $user->setSaldo((string)((float)$user->getSaldo() + 100));
+    $user->setUltimaRecompensa($ahora);
+    $em->flush();
+
+    return $this->json(['saldo' => $user->getSaldo(), 'success' => true]);
+}
+#[Route('/ranking', name: 'app_ranking')]
+public function ranking(Request $request, EntityManagerInterface $em): Response
+{
+    $filtroJuego = $request->request->get('juego', '');
+
+    $qb = $em->createQueryBuilder();
+    $qb->select('p')
+       ->from(\App\Entity\Partida::class, 'p')
+       ->join('p.juego', 'j')
+       ->where('p.resultado_obtenido > 0')
+       ->orderBy('p.resultado_obtenido', 'DESC')
+       ->setMaxResults(10);
+
+    if ($filtroJuego) {
+        $qb->andWhere('j.nombre = :juego')
+           ->setParameter('juego', $filtroJuego);
+    }
+
+    $partidas = $qb->getQuery()->getResult();
+
+    return $this->render('home/ranking.html.twig', [
+        'partidas' => $partidas,
+        'filtroJuego' => $filtroJuego
+    ]);
+}
+
+#[Route('/terminos', name: 'app_terminos')]
+public function terminos(): Response
+{
+    return $this->render('home/terminos.html.twig');
 }
 }

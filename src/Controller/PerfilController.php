@@ -58,12 +58,94 @@ class PerfilController extends AbstractController
     }
 
     #[Route('/historial', name: 'app_historial')]
-public function historial(EntityManagerInterface $em): Response
+public function historial(Request $request, EntityManagerInterface $em): Response
 {
-    $partidas = $em->getRepository(\App\Entity\Partida::class)->findBy(
-        ['user' => $this->getUser()],
-        ['fecha' => 'DESC']
-    );
-    return $this->render('perfil/historial.html.twig', ['partidas' => $partidas]);
+    $user = $this->getUser();
+    $filtroJuego = $request->request->get('juego', '');
+    $filtroFechaDesde = $request->request->get('fecha_desde', '');
+    $filtroFechaHasta = $request->request->get('fecha_hasta', '');
+
+    $qb = $em->createQueryBuilder();
+    $qb->select('p')
+       ->from(\App\Entity\Partida::class, 'p')
+       ->join('p.juego', 'j')
+       ->where('p.user = :user')
+       ->setParameter('user', $user)
+       ->orderBy('p.fecha', 'DESC');
+
+    if ($filtroJuego) {
+        $qb->andWhere('j.nombre = :juego')
+           ->setParameter('juego', $filtroJuego);
+    }
+
+    if ($filtroFechaDesde) {
+        $qb->andWhere('p.fecha >= :desde')
+           ->setParameter('desde', new \DateTime($filtroFechaDesde));
+    }
+
+    if ($filtroFechaHasta) {
+        $qb->andWhere('p.fecha <= :hasta')
+           ->setParameter('hasta', new \DateTime($filtroFechaHasta . ' 23:59:59'));
+    }
+
+    $partidas = $qb->getQuery()->getResult();
+
+    return $this->render('perfil/historial.html.twig', [
+        'partidas' => $partidas,
+        'filtroJuego' => $filtroJuego,
+        'filtroFechaDesde' => $filtroFechaDesde,
+        'filtroFechaHasta' => $filtroFechaHasta,
+    ]);
+}
+
+#[Route('/estadisticas', name: 'app_estadisticas')]
+public function estadisticas(EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    $partidas = $em->getRepository(\App\Entity\Partida::class)->findBy(['user' => $user]);
+
+    $jugadas = count($partidas);
+    $ganadas = 0;
+    $perdidas = 0;
+    $totalGanado = 0;
+    $totalApostado = 0;
+
+    foreach ($partidas as $partida) {
+        $totalApostado += (float) $partida->getCantidadApostada();
+        $totalGanado += (float) $partida->getResultadoObtenido();
+        if ((float) $partida->getResultadoObtenido() > 0) {
+            $ganadas++;
+        } else {
+            $perdidas++;
+        }
+    }
+
+    return $this->render('perfil/estadisticas.html.twig', [
+        'jugadas' => $jugadas,
+        'ganadas' => $ganadas,
+        'perdidas' => $perdidas,
+        'totalGanado' => $totalGanado,
+        'totalApostado' => $totalApostado,
+        'balance' => $totalGanado - $totalApostado
+    ]);
+}
+#[Route('/eliminar-cuenta', name: 'app_eliminar_cuenta', methods: ['POST'])]
+public function eliminarCuenta(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
+{
+    $user = $this->getUser();
+    $password = $request->request->get('password');
+
+    if (!$hasher->isPasswordValid($user, $password)) {
+        $this->addFlash('error_eliminar', 'Contraseña incorrecta.');
+        return $this->redirectToRoute('app_home');
+    }
+
+    $userId = $user->getId();
+    $em->getConnection()->executeStatement('DELETE FROM transaccion WHERE user_id = :id', ['id' => $userId]);
+    $em->getConnection()->executeStatement('DELETE FROM partida WHERE user_id = :id', ['id' => $userId]);
+    $em->getConnection()->executeStatement('DELETE FROM `user` WHERE id = :id', ['id' => $userId]);
+
+    $request->getSession()->invalidate();
+    return $this->redirectToRoute('app_register');
 }
 }

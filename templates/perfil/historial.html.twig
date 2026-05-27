@@ -14,8 +14,30 @@
 <div class="container py-4">
     <h3 class="text-warning mb-4">Historial de partidas</h3>
 
+    <form method="POST" class="row g-2 mb-4">
+        <div class="col-auto">
+            <select name="juego" class="form-select bg-secondary text-white border-0">
+                <option value="">Todos los juegos</option>
+                <option value="Ruleta Europea" {% if filtroJuego == 'Ruleta Europea' %}selected{% endif %}>Ruleta Europea</option>
+                <option value="Slots" {% if filtroJuego == 'Slots' %}selected{% endif %}>Slots</option>
+                <option value="Cara o Cruz" {% if filtroJuego == 'Cara o Cruz' %}selected{% endif %}>Cara o Cruz</option>
+                <option value="Dados" {% if filtroJuego == 'Dados' %}selected{% endif %}>Dados</option>
+            </select>
+        </div>
+        <div class="col-auto">
+            <input type="date" name="fecha_desde" class="form-control bg-secondary text-white border-0" value="{{ filtroFechaDesde }}" placeholder="Desde">
+        </div>
+        <div class="col-auto">
+            <input type="date" name="fecha_hasta" class="form-control bg-secondary text-white border-0" value="{{ filtroFechaHasta }}" placeholder="Hasta">
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-warning">Filtrar</button>
+            <a href="{{ path('app_historial') }}" class="btn btn-outline-secondary">Limpiar</a>
+        </div>
+    </form>
+
     {% if partidas is empty %}
-        <p class="text-white-50">No has jugado ninguna partida todavía.</p>
+        <p class="text-white-50">No hay partidas con esos filtros.</p>
     {% else %}
         <div class="table-responsive">
             <table class="table table-dark table-bordered">

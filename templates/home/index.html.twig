@@ -8,6 +8,7 @@
         .game-card { height: 300px; cursor: pointer; transition: transform 0.2s; }
         .game-card:hover { transform: scale(1.03); }
         .game-card img { width: 100%; height: 200px; object-fit: cover; }
+        #sidebar { min-width:200px; min-height:100vh; transition: all 0.3s; }
     </style>
 </head>
 <body class="bg-dark text-white">
@@ -18,14 +19,13 @@
         {% if is_granted('ROLE_ADMIN') %}
             <a href="{{ path('app_admin') }}" class="btn btn-danger btn-sm">Admin</a>
         {% endif %}
-        <span class="text-warning">Bienvenido, {{ app.user.nombre ?? app.user.email }} | Saldo: {{ app.user.saldo }}€</span>
+        <span class="text-warning">Bienvenido, {{ app.user.nombre ?? app.user.email }} | Saldo: <span id="saldo">{{ app.user.saldo }}</span>€</span>
         <div style="position:relative">
             <img src="{{ app.user.fotoPerfil ? asset('uploads/avatares/' ~ app.user.fotoPerfil) : 'https://ui-avatars.com/api/?name=' ~ (app.user.nombre ?? app.user.email) ~ '&background=6c757d&color=fff&size=40' }}"
                 class="rounded-circle" style="width:40px;height:40px;object-fit:cover;cursor:pointer"
                 onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display=='block'?'none':'block'">
             <div style="display:none;position:absolute;right:0;top:50px;background:#222;border-radius:8px;min-width:150px;z-index:999">
                 <a href="{{ path('app_perfil') }}" style="display:block;padding:10px 15px;color:white;text-decoration:none">Mi perfil</a>
-                <a href="{{ path('app_historial') }}" style="display:block;padding:10px 15px;color:white;text-decoration:none">Historial de juego</a>
                 <hr style="margin:0;border-color:#444">
                 <a href="{{ path('app_logout') }}" style="display:block;padding:10px 15px;color:white;text-decoration:none">Cerrar sesión</a>
             </div>
@@ -33,47 +33,109 @@
     </div>
 </nav>
 
-<div class="container py-5">
-    <h1 class="text-center text-warning mb-5">Elige tu juego</h1>
-    <div class="row g-4">
+<div class="d-flex">
+    <div id="sidebar" class="bg-black p-3">
+        <h6 class="text-warning mb-3">Menu</h6>
+        <a href="{{ path('app_perfil') }}" class="d-block text-white text-decoration-none py-2 px-2 rounded mb-1" style="background:#1a1a1a">Mi perfil</a>
+        <a href="{{ path('app_historial') }}" class="d-block text-white text-decoration-none py-2 px-2 rounded mb-1" style="background:#1a1a1a">Historial de juego</a>
+        <a href="{{ path('app_ranking') }}" class="d-block text-white text-decoration-none py-2 px-2 rounded mb-1" style="background:#1a1a1a">Ranking</a>
+        <a href="{{ path('app_estadisticas') }}" class="d-block text-white text-decoration-none py-2 px-2 rounded mb-1" style="background:#1a1a1a">Mis estadísticas</a>
+        <a href="{{ path('app_terminos') }}" class="d-block text-white text-decoration-none py-2 px-2 rounded mb-1" style="background:#1a1a1a">Términos y condiciones</a>
 
-        <div class="col-12 col-md-4">
-            <a href="{{ path('app_ruleta') }}" class="text-decoration-none">
-                <div class="game-card bg-secondary rounded overflow-hidden text-center">
-                    <img src="{{ asset('images/ruleta.jpg') }}" alt="Ruleta">
-                    <div class="p-3">
-                        <h3 class="text-warning">Ruleta</h3>
-                        <p class="text-white-50">Apuesta al número o color</p>
+        <hr style="border-color:#333">
+
+        <button class="btn btn-outline-danger btn-sm w-100 mb-2" onclick="document.getElementById('modalEliminar').style.display='block'">Eliminar cuenta</button>
+
+        <div id="modalEliminar" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999">
+            <div class="bg-dark border border-secondary rounded p-4 mx-auto mt-5" style="max-width:350px">
+                <h5 class="text-danger mb-3">Eliminar cuenta</h5>
+                <p class="text-white-50 small">Esta acción es irreversible. Introduce tu contraseña para confirmar.</p>
+                <form method="post" action="{{ path('app_eliminar_cuenta') }}">
+                    <input type="password" name="password" class="form-control mb-3" placeholder="Tu contraseña" required>
+                    {% for msg in app.flashes('error_eliminar') %}
+                        <div class="text-danger small mb-2">{{ msg }}</div>
+                    {% endfor %}
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-danger w-100">Eliminar</button>
+                        <button type="button" class="btn btn-secondary w-100" onclick="document.getElementById('modalEliminar').style.display='none'">Cancelar</button>
                     </div>
-                </div>
-            </a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex-grow-1 p-4">
+        <button onclick="toggleSidebar()" class="btn btn-outline-warning btn-sm mb-3">☰ Menu</button>
+
+        <div class="text-center mb-4">
+            <div class="d-inline-block bg-secondary rounded p-3" style="min-width:300px">
+                <span class="text-warning fw-bold">Recompensa diaria</span>
+                <p class="text-white-50 mb-2 small">Reclama 100€ gratis cada 24 horas</p>
+                <button class="btn btn-warning btn-sm" onclick="reclamarRecompensa()">Reclamar 100€</button>
+                <div id="msgRecompensa" class="mt-2 small"></div>
+            </div>
         </div>
 
-        <div class="col-12 col-md-4">
-            <a href="{{ path('app_slots') }}" class="text-decoration-none">
-                <div class="game-card bg-secondary rounded overflow-hidden text-center">
-                    <img src="{{ asset('images/slots.jpg') }}" alt="Slots">
-                    <div class="p-3">
-                        <h3 class="text-warning">Slots</h3>
-                        <p class="text-white-50">Gira y gana premios</p>
+        <h1 class="text-center text-warning mb-4">Elige tu juego</h1>
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <a href="{{ path('app_ruleta') }}" class="text-decoration-none">
+                    <div class="game-card bg-secondary rounded overflow-hidden text-center">
+                        <img src="{{ asset('images/ruleta.jpg') }}" alt="Ruleta">
+                        <div class="p-3">
+                            <h3 class="text-warning">Ruleta</h3>
+                            <p class="text-white-50">Apuesta al número o color</p>
+                        </div>
                     </div>
-                </div>
-            </a>
-        </div>
-
-        <div class="col-12 col-md-4">
-            <a href="{{ path('app_juegos') }}" class="text-decoration-none">
-                <div class="game-card bg-secondary rounded overflow-hidden text-center">
-                    <img src="{{ asset('images/dados.jpg') }}" alt="Juegos">
-                    <div class="p-3">
-                        <h3 class="text-warning">Juegos</h3>
-                        <p class="text-white-50">Más juegos de casino</p>
+                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <a href="{{ path('app_slots') }}" class="text-decoration-none">
+                    <div class="game-card bg-secondary rounded overflow-hidden text-center">
+                        <img src="{{ asset('images/slots.jpg') }}" alt="Slots">
+                        <div class="p-3">
+                            <h3 class="text-warning">Slots</h3>
+                            <p class="text-white-50">Gira y gana premios</p>
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <a href="{{ path('app_juegos') }}" class="text-decoration-none">
+                    <div class="game-card bg-secondary rounded overflow-hidden text-center">
+                        <img src="{{ asset('images/dados.jpg') }}" alt="Juegos">
+                        <div class="p-3">
+                            <h3 class="text-warning">Juegos</h3>
+                            <p class="text-white-50">Más juegos de casino</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
         </div>
-
     </div>
 </div>
+
+<script>
+function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
+}
+
+function reclamarRecompensa() {
+    fetch('{{ path('app_recompensa') }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            document.getElementById('msgRecompensa').innerHTML = '<span class="text-danger">' + data.error + '</span>';
+        } else {
+            document.getElementById('saldo').textContent = parseFloat(data.saldo).toFixed(2);
+            document.getElementById('msgRecompensa').innerHTML = '<span class="text-success">¡+100€ añadidos!</span>';
+        }
+    });
+}
+</script>
 </body>
 </html>

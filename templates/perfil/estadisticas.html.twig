@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Estadísticas - CasinoGG</title>
+</head>
+<body class="bg-dark text-white">
+<nav class="navbar navbar-dark bg-black px-4">
+    <a href="{{ path('app_home') }}" class="btn btn-outline-warning btn-sm">Volver al inicio</a>
+    <span class="text-warning">Saldo: {{ app.user.saldo }}€</span>
+</nav>
+
+<div class="container py-4" style="max-width:500px">
+    <h3 class="text-warning mb-4 text-center">Mis estadísticas</h3>
+
+    <div class="bg-secondary rounded p-4">
+        <div class="row text-center g-3">
+            <div class="col-6">
+                <div class="bg-dark rounded p-3">
+                    <div class="fs-2 fw-bold text-warning">{{ jugadas }}</div>
+                    <small class="text-white-50">Partidas jugadas</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="bg-dark rounded p-3">
+                    <div class="fs-2 fw-bold text-success">{{ ganadas }}</div>
+                    <small class="text-white-50">Partidas ganadas</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="bg-dark rounded p-3">
+                    <div class="fs-2 fw-bold text-danger">{{ perdidas }}</div>
+                    <small class="text-white-50">Partidas perdidas</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="bg-dark rounded p-3">
+                    <div class="fs-2 fw-bold {{ balance >= 0 ? 'text-success' : 'text-danger' }}">{{ balance|number_format(2) }}€</div>
+                    <small class="text-white-50">Balance total</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="bg-dark rounded p-3">
+                    <div class="fs-4 fw-bold text-warning">{{ totalApostado|number_format(2) }}€</div>
+                    <small class="text-white-50">Total apostado</small>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="bg-dark rounded p-3">
+                    <div class="fs-4 fw-bold text-success">{{ totalGanado|number_format(2) }}€</div>
+                    <small class="text-white-50">Total ganado</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -44,6 +44,11 @@ private ?string $nombre = null;
 
     #[ORM\Column(length: 255, nullable: true)]
 private ?string $foto_perfil = null;
+
+#[ORM\Column(nullable: true)]
+private ?\DateTime $ultima_recompensa = null;
+
+
     public function getId(): ?int { return $this->id; }
     public function getEmail(): ?string { return $this->email; }
     public function setEmail(string $email): static { $this->email = $email; return $this; }
@@ -62,7 +67,9 @@ private ?string $foto_perfil = null;
     public function getVerificationToken(): ?string { return $this->verificationToken; }
     public function setVerificationToken(?string $t): static { $this->verificationToken = $t; return $this; }
     public function getNombre(): ?string { return $this->nombre; }
-public function setNombre(?string $n): static { $this->nombre = $n; return $this; }
-public function getFotoPerfil(): ?string { return $this->foto_perfil; }
-public function setFotoPerfil(?string $f): static { $this->foto_perfil = $f; return $this; }
+    public function setNombre(?string $n): static { $this->nombre = $n; return $this; }
+    public function getFotoPerfil(): ?string { return $this->foto_perfil; }
+    public function setFotoPerfil(?string $f): static { $this->foto_perfil = $f; return $this; }
+    public function getUltimaRecompensa(): ?\DateTime { return $this->ultima_recompensa; }
+    public function setUltimaRecompensa(?\DateTime $d): static { $this->ultima_recompensa = $d; return $this; }
 }

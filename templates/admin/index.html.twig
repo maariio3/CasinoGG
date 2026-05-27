@@ -25,6 +25,9 @@
                     <th>Rol</th>
                     <th>Estado</th>
                     <th>Saldo</th>
+                    <th>Total apostado</th>
+                    <th>Total ganado</th>
+                    <th>Balance</th>
                     <th>Acción</th>
                 </tr>
             </thead>
@@ -33,9 +36,14 @@
                 <tr>
                     <td>{{ usuario.id }}</td>
                     <td>{{ usuario.email }}</td>
-                    <td>{{ usuario.roles|join(', ') }}</td>
+                    <td>{{ 'ROLE_ADMIN' in usuario.roles ? 'Admin' : 'Usuario' }}</td>
                     <td>{{ usuario.estadoVerificacion }}</td>
                     <td>{{ usuario.saldo }}€</td>
+                    <td>{{ balances[usuario.id].apostado|number_format(2) }}€</td>
+                    <td>{{ balances[usuario.id].ganado|number_format(2) }}€</td>
+                    <td class="{{ balances[usuario.id].balance >= 0 ? 'text-success' : 'text-danger' }}">
+                        {{ balances[usuario.id].balance|number_format(2) }}€
+                    </td>
                     <td>
                         <div class="d-flex gap-2 flex-wrap">
                             <form method="post" action="{{ path('app_admin_saldo', {id: usuario.id}) }}" class="d-flex gap-2">

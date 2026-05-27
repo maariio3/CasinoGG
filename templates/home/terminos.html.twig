@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Términos y condiciones - CasinoGG</title>
+</head>
+<body class="bg-dark text-white">
+<nav class="navbar navbar-dark bg-black px-4">
+    <span class="navbar-brand">CasinoGG</span>
+</nav>
+
+<div class="container py-4" style="max-width:600px">
+    <h3 class="text-warning mb-4">Términos y condiciones</h3>
+
+    <div class="bg-secondary rounded p-4">
+        <h5>1. Edad mínima</h5>
+        <p class="text-white-50">Para registrarse y usar CasinoGG debes ser mayor de 18 años. Al aceptar estos términos confirmas que cumples este requisito.</p>
+
+        <h5>2. Dinero virtual</h5>
+        <p class="text-white-50">CasinoGG es una plataforma de casino virtual 100% simulado. El dinero utilizado es virtual y no tiene ningún valor real ni puede ser canjeado.</p>
+
+        <h5>3. Uso responsable</h5>
+        <p class="text-white-50">CasinoGG es una plataforma de entretenimiento. No nos hacemos responsables del uso indebido de la plataforma.</p>
+
+        <h5>4. Privacidad</h5>
+        <p class="text-white-50">Los datos personales introducidos se usan únicamente para el funcionamiento de la plataforma y no serán cedidos a terceros.</p>
+
+        {% if app.user %}
+            <a href="{{ path('app_home') }}" class="btn btn-warning mt-3">Volver</a>
+        {% else %}
+            <a href="{{ path('app_register') }}" class="btn btn-warning mt-3">Volver</a>
+        {% endif %}
+    </div>
+</div>
+</body>
+</html>
