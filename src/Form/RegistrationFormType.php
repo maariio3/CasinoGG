@@ -28,10 +28,11 @@ class RegistrationFormType extends AbstractType
                 'mapped' => false,
                 'label' => 'Contraseña',
                 'constraints' => [
-                    new NotBlank(['message' => 'Introduce una contraseña']),
-                    new Length(['min' => 6, 'minMessage' => 'Mínimo {{ limit }} caracteres']),
-                ],
-            ])
+                new NotBlank(message: 'Introduce una contraseña'),
+                new Length(min: 6, minMessage: 'La contraseña debe tener al menos {{ limit }} caracteres'),
+             ],
+    'attr' => ['placeholder' => 'Mínimo 6 caracteres'],
+])
             ->add('agreeTerms', CheckboxType::class, [
                 'mapped' => false,
                 'label' => 'Acepto los términos y condiciones',

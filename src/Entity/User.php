@@ -39,6 +39,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 64, nullable: true)]
     private ?string $verificationToken = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+private ?string $nombre = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+private ?string $foto_perfil = null;
     public function getId(): ?int { return $this->id; }
     public function getEmail(): ?string { return $this->email; }
     public function setEmail(string $email): static { $this->email = $email; return $this; }
@@ -56,4 +61,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setSaldo(string $s): static { $this->saldo = $s; return $this; }
     public function getVerificationToken(): ?string { return $this->verificationToken; }
     public function setVerificationToken(?string $t): static { $this->verificationToken = $t; return $this; }
+    public function getNombre(): ?string { return $this->nombre; }
+public function setNombre(?string $n): static { $this->nombre = $n; return $this; }
+public function getFotoPerfil(): ?string { return $this->foto_perfil; }
+public function setFotoPerfil(?string $f): static { $this->foto_perfil = $f; return $this; }
 }

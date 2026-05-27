@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <title>Slots - CasinoGG</title>
+    <title>Dados - CasinoGG</title>
 </head>
 <body class="bg-dark text-white">
 <nav class="navbar navbar-dark bg-black px-4">
@@ -12,33 +12,41 @@
 </nav>
 
 <div class="container py-4 text-center">
-    <h2 class="text-warning mb-4">Slots</h2>
+    <h2 class="text-warning mb-4">Dados</h2>
 
-    <div class="d-flex justify-content-center gap-3 mb-2">
-        <div id="c1" class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:100px;height:100px;font-size:3rem">?</div>
-        <div id="c2" class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:100px;height:100px;font-size:3rem">?</div>
-        <div id="c3" class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:100px;height:100px;font-size:3rem">?</div>
+    <div class="d-flex justify-content-center gap-4 mb-2">
+        <div id="dado1" class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:100px;height:100px;font-size:3rem">🎲</div>
+        <div id="dado2" class="bg-secondary rounded d-flex align-items-center justify-content-center" style="width:100px;height:100px;font-size:3rem">🎲</div>
     </div>
 
-    <small class="text-white-50 mb-4 d-block">3 iguales = x5 | 2 iguales = x2</small>
+    <div id="suma" class="text-white-50 mb-3"></div>
+
+    <small class="text-white-50 d-block mb-3">Alta (8-12) = x2 | Baja (2-7) = x2</small>
 
     <input type="number" id="apuesta" class="form-control mb-3 mx-auto" style="max-width:200px" placeholder="Apuesta" min="1">
-    <button class="btn btn-warning px-4 mb-3" onclick="jugar()">Jugar</button>
 
-    <div id="resultado" class="fs-5 mt-2"></div>
+    <div class="d-flex gap-3 justify-content-center mb-3">
+        <button class="btn btn-warning px-4" onclick="jugar('alta')">Alta (8-12)</button>
+        <button class="btn btn-outline-warning px-4" onclick="jugar('baja')">Baja (2-7)</button>
+    </div>
+
+    <div id="resultado" class="fs-5"></div>
 </div>
 
 <script>
-    function jugar() {
+    const caras = {1:'⚀', 2:'⚁', 3:'⚂', 4:'⚃', 5:'⚄', 6:'⚅'};
+
+    function jugar(eleccion) {
         const apuesta = document.getElementById('apuesta').value;
         if (!apuesta || apuesta <= 0) { alert('Introduce una apuesta válida'); return; }
 
         document.getElementById('resultado').innerHTML = '';
+        document.getElementById('suma').innerHTML = '';
 
-        fetch('{{ path('app_slots_jugar') }}', {
+        fetch('{{ path('app_dados_jugar') }}', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: `apuesta=${apuesta}`
+            body: `apuesta=${apuesta}&eleccion=${eleccion}`
         })
         .then(r => r.json())
         .then(data => {
@@ -46,9 +54,9 @@
                 document.getElementById('resultado').innerHTML = `<span class="text-danger">${data.error}</span>`;
                 return;
             }
-            document.getElementById('c1').textContent = data.resultado[0];
-            document.getElementById('c2').textContent = data.resultado[1];
-            document.getElementById('c3').textContent = data.resultado[2];
+            document.getElementById('dado1').textContent = caras[data.dado1];
+            document.getElementById('dado2').textContent = caras[data.dado2];
+            document.getElementById('suma').textContent = `Suma: ${data.suma} (${data.resultado})`;
             document.getElementById('saldo').textContent = data.saldo.toFixed(2);
             document.getElementById('resultado').innerHTML = data.gano
                 ? `<span class="text-success">¡Ganaste ${data.ganancia.toFixed(2)}€!</span>`

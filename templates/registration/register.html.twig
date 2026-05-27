@@ -18,10 +18,16 @@
         <div class="mb-3">
             <label class="form-label">Correo electrónico</label>
             {{ form_widget(form.email, {'attr': {'class': 'form-control'}}) }}
+            {% for error in form.email.vars.errors %}
+                <div class="text-danger mt-1">{{ error.message }}</div>
+            {% endfor %}
         </div>
         <div class="mb-3">
-            <label class="form-label">Contraseña</label>
-            {{ form_widget(form.plainPassword, {'attr': {'class': 'form-control'}}) }}
+            <label class="form-label">Contraseña <small class="text-white-50">(mínimo 6 caracteres)</small></label>
+            {{ form_widget(form.plainPassword, {'attr': {'class': 'form-control', 'placeholder': 'Mínimo 6 caracteres'}}) }}
+            {% for error in form.plainPassword.vars.errors %}
+                <div class="text-danger mt-1">{{ error.message }}</div>
+            {% endfor %}
         </div>
         <div class="mb-3 form-check">
             {{ form_widget(form.newsletter, {'attr': {'class': 'form-check-input'}}) }}

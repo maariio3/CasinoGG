@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Mi Perfil - CasinoGG</title>
+</head>
+<body class="bg-dark text-white">
+<nav class="navbar navbar-dark bg-black px-4">
+    <a href="{{ path('app_home') }}" class="navbar-brand">CasinoGG</a>
+    <span class="text-warning">Saldo: {{ app.user.saldo }}€</span>
+</nav>
+
+<div class="container py-4" style="max-width:500px">
+    {% for msg in app.flashes('success') %}
+        <div class="alert alert-success">{{ msg }}</div>
+    {% endfor %}
+    {% for msg in app.flashes('error') %}
+        <div class="alert alert-danger">{{ msg }}</div>
+    {% endfor %}
+
+    <div class="text-center mb-4">
+        {% if app.user.fotoPerfil %}
+            <img src="{{ asset('uploads/avatares/' ~ app.user.fotoPerfil) }}" class="rounded-circle" style="width:100px;height:100px;object-fit:cover">
+        {% else %}
+            <div class="rounded-circle bg-secondary d-inline-flex align-items-center justify-content-center" style="width:100px;height:100px;font-size:2rem">
+                {{ app.user.nombre ? (app.user.nombre|slice(0,1)|upper) : (app.user.email|slice(0,1)|upper) }}
+            </div>
+        {% endif %}
+        <h4 class="mt-2">{{ app.user.nombre ?? app.user.email }}</h4>
+        <small class="text-white-50">{{ app.user.email }}</small>
+    </div>
+
+    <div class="bg-secondary p-4 rounded mb-3">
+        <h5 class="text-warning mb-3">Cambiar foto</h5>
+        <form method="post" enctype="multipart/form-data">
+            <input type="hidden" name="accion" value="foto">
+            <input type="file" name="foto" class="form-control mb-2" accept="image/*">
+            <button class="btn btn-warning w-100">Subir foto</button>
+        </form>
+    </div>
+
+    <div class="bg-secondary p-4 rounded mb-3">
+        <h5 class="text-warning mb-3">Cambiar nombre</h5>
+        <form method="post">
+            <input type="hidden" name="accion" value="nombre">
+            <input type="text" name="nombre" class="form-control mb-2" placeholder="Nuevo nombre" value="{{ app.user.nombre ?? '' }}">
+            <button class="btn btn-warning w-100">Guardar nombre</button>
+        </form>
+    </div>
+
+    <div class="bg-secondary p-4 rounded mb-3">
+        <h5 class="text-warning mb-3">Cambiar contraseña</h5>
+        <form method="post">
+            <input type="hidden" name="accion" value="password">
+            <input type="password" name="password_actual" class="form-control mb-2" placeholder="Contraseña actual" required>
+            <input type="password" name="password_nueva" class="form-control mb-2" placeholder="Nueva contraseña (mín. 6 caracteres)" required>
+            <button class="btn btn-warning w-100">Cambiar contraseña</button>
+        </form>
+    </div>
+
+    <a href="{{ path('app_home') }}" class="btn btn-outline-warning w-100">Volver al inicio</a>
+</div>
+</body>
+</html>

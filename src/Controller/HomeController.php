@@ -82,4 +82,132 @@ class HomeController extends AbstractController
             'gano' => $ganancia > 0
         ]);
     }
+
+    #[Route('/slots/jugar', name: 'app_slots_jugar', methods: ['POST'])]
+public function slotsJugar(Request $request, EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    $apuesta = (float) $request->request->get('apuesta');
+
+    if ($apuesta <= 0 || $apuesta > (float) $user->getSaldo()) {
+        return $this->json(['error' => 'Apuesta inválida'], 400);
+    }
+
+    $simbolos = ['🍒', '🍋', '🍇', '⭐', '🔔', '💎'];
+    $resultado = [
+        $simbolos[random_int(0, 5)],
+        $simbolos[random_int(0, 5)],
+        $simbolos[random_int(0, 5)]
+    ];
+
+    $ganancia = 0;
+    if ($resultado[0] === $resultado[1] && $resultado[1] === $resultado[2]) {
+        $ganancia = $apuesta * 5;
+    } elseif ($resultado[0] === $resultado[1] || $resultado[1] === $resultado[2] || $resultado[0] === $resultado[2]) {
+        $ganancia = $apuesta * 2;
+    }
+
+    $nuevoSaldo = (float) $user->getSaldo() - $apuesta + $ganancia;
+    $user->setSaldo((string) $nuevoSaldo);
+
+    $partida = new \App\Entity\Partida();
+    $partida->setUser($user);
+    $partida->setJuego($em->getRepository(\App\Entity\Juego::class)->findOneBy(['nombre' => 'Slots']));
+    $partida->setCantidadApostada((string) $apuesta);
+    $partida->setResultadoObtenido((string) $ganancia);
+    $partida->setFecha(new \DateTime());
+    $em->persist($partida);
+    $em->flush();
+
+    return $this->json([
+        'resultado' => $resultado,
+        'ganancia' => $ganancia,
+        'saldo' => $nuevoSaldo,
+        'gano' => $ganancia > 0
+    ]);
+}
+
+#[Route('/juegos/caracruz', name: 'app_caracruz')]
+public function caraCruz(): Response
+{
+    return $this->render('home/caracruz.html.twig');
+}
+
+#[Route('/juegos/caracruz/jugar', name: 'app_caracruz_jugar', methods: ['POST'])]
+public function caraCruzJugar(Request $request, EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    $apuesta = (float) $request->request->get('apuesta');
+    $eleccion = $request->request->get('eleccion');
+
+    if ($apuesta <= 0 || $apuesta > (float) $user->getSaldo()) {
+        return $this->json(['error' => 'Apuesta inválida'], 400);
+    }
+
+    $resultado = random_int(0, 1) ? 'cara' : 'cruz';
+    $ganancia = $eleccion === $resultado ? $apuesta * 2 : 0;
+    $nuevoSaldo = (float) $user->getSaldo() - $apuesta + $ganancia;
+    $user->setSaldo((string) $nuevoSaldo);
+
+    $partida = new \App\Entity\Partida();
+    $partida->setUser($user);
+    $partida->setJuego($em->getRepository(\App\Entity\Juego::class)->findOneBy(['nombre' => 'Cara o Cruz']));
+    $partida->setCantidadApostada((string) $apuesta);
+    $partida->setResultadoObtenido((string) $ganancia);
+    $partida->setFecha(new \DateTime());
+    $em->persist($partida);
+    $em->flush();
+
+    return $this->json([
+        'resultado' => $resultado,
+        'ganancia' => $ganancia,
+        'saldo' => $nuevoSaldo,
+        'gano' => $ganancia > 0
+    ]);
+}
+
+#[Route('/juegos/dados', name: 'app_dados')]
+public function dados(): Response
+{
+    return $this->render('home/dados.html.twig');
+}
+
+#[Route('/juegos/dados/jugar', name: 'app_dados_jugar', methods: ['POST'])]
+public function dadosJugar(Request $request, EntityManagerInterface $em): Response
+{
+    $user = $this->getUser();
+    $apuesta = (float) $request->request->get('apuesta');
+    $eleccion = $request->request->get('eleccion');
+
+    if ($apuesta <= 0 || $apuesta > (float) $user->getSaldo()) {
+        return $this->json(['error' => 'Apuesta inválida'], 400);
+    }
+
+    $dado1 = random_int(1, 6);
+    $dado2 = random_int(1, 6);
+    $suma = $dado1 + $dado2;
+    $resultado = $suma >= 8 ? 'alta' : 'baja';
+    $ganancia = $eleccion === $resultado ? $apuesta * 2 : 0;
+    $nuevoSaldo = (float) $user->getSaldo() - $apuesta + $ganancia;
+    $user->setSaldo((string) $nuevoSaldo);
+
+    $partida = new \App\Entity\Partida();
+    $partida->setUser($user);
+    $partida->setJuego($em->getRepository(\App\Entity\Juego::class)->findOneBy(['nombre' => 'Dados']));
+    $partida->setCantidadApostada((string) $apuesta);
+    $partida->setResultadoObtenido((string) $ganancia);
+    $partida->setFecha(new \DateTime());
+    $em->persist($partida);
+    $em->flush();
+
+    return $this->json([
+        'dado1' => $dado1,
+        'dado2' => $dado2,
+        'suma' => $suma,
+        'resultado' => $resultado,
+        'ganancia' => $ganancia,
+        'saldo' => $nuevoSaldo,
+        'gano' => $ganancia > 0
+    ]);
+}
 }

@@ -4,15 +4,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>Juegos - CasinoGG</title>
+    <style>
+        .game-card { height: 200px; cursor: pointer; transition: transform 0.2s; }
+        .game-card:hover { transform: scale(1.03); }
+    </style>
 </head>
 <body class="bg-dark text-white">
 <nav class="navbar navbar-dark bg-black px-4">
-    <a href="{{ path('app_home') }}" class="navbar-brand">CasinoGG</a>
+    <a href="{{ path('app_home') }}" class="btn btn-outline-warning btn-sm">Volver al inicio</a>
+    <span class="text-warning">Saldo: {{ app.user.saldo }}€</span>
 </nav>
-<div class="container py-5 text-center">
-    <h1 class="text-warning">Juegos</h1>
-    <p class="text-white-50">Próximamente...</p>
-    <a href="{{ path('app_home') }}" class="btn btn-warning mt-3">Volver</a>
+
+<div class="container py-4">
+    <h2 class="text-warning mb-4 text-center">Juegos</h2>
+    <div class="row g-4">
+        <div class="col-12 col-md-4">
+            <a href="{{ path('app_caracruz') }}" class="text-decoration-none">
+                <div class="game-card bg-secondary rounded d-flex flex-column align-items-center justify-content-center text-center p-3">
+                    <div style="font-size:3rem">🪙</div>
+                    <h4 class="text-warning mt-2">Cara o Cruz</h4>
+                    <p class="text-white-50">Acierta y gana x2</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-12 col-md-4">
+            <a href="{{ path('app_dados') }}" class="text-decoration-none">
+                <div class="game-card bg-secondary rounded d-flex flex-column align-items-center justify-content-center text-center p-3">
+                    <div style="font-size:3rem">🎲</div>
+                    <h4 class="text-warning mt-2">Dados</h4>
+                    <p class="text-white-50">Alta o baja, gana x2</p>
+                </div>
+            </a>
+        </div>
+    </div>
 </div>
 </body>
 </html>
